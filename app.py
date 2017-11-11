@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QLabel, QGroupBox, QDesktopWidget, QLineEdit, QPushButton,
                              QProgressBar, QInputDialog, QFileDialog)
-from PyQt5.QtCore import QThread, pyqtSignal, QCoreApplication, pyqtSlot, Qt
+from PyQt5.QtCore import QThread, pyqtSignal, QCoreApplication, pyqtSlot
 import scraper
 import sys
 
@@ -48,12 +48,10 @@ class application(QMainWindow):
         mainPage.status = QLabel("", mainPage)
         mainPage.status.move(150, 300)
         mainPage.status.resize(300,20)
-        mainPage.status.setAlignment(Qt.AlignCenter)
 
         mainPage.progressBar = QProgressBar(mainPage)
         mainPage.progressBar.move(125, 250)
         mainPage.progressBar.resize(350, 15)
-        mainPage.progressBar.setAlignment(Qt.AlignCenter)
 
         mainPage.resize(600, 400)
         self.center()
