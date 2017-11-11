@@ -1,13 +1,15 @@
 # Patient Presciption Monitor
 Download patient prescription data from the [arkansas pmp database](https://arkansaspmp.com) for all your patients
 
+## Prerequisites
 * PyQt5
 * Pandas
 * Requests
 * Selenium
-## Prerequisites
+* Google Chrome or Chromium
+* chromedriver
 
-You can install all of them at once by cloning the repo and running
+You can install all of them (except chrome and chromedriver) at once by cloning the repo and running
 
 `pip install -r requirements.txt`
 
