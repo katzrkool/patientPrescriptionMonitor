@@ -33,28 +33,15 @@ try:
 
     # Goes to the login site and authenticates
     def pushTheButton(username, password):
-        driver.get("https://{}:{}@arpmp-ph.hidinc.com/arappl/bdarpdmq/pmqadhocrpt.html".format(
-            urllib.parse.quote(username, safe=''), urllib.parse.quote(password, safe='')))
+        driver.get("https://arkansas.pmpaware.net/login")
 
-        # waits until alert pops up and fills it in
-        '''WebDriverWait(driver, 10).until(EC.alert_is_present())
-        driver.switch_to.alert.send_keys(username + Keys.TAB + password)
-        time.sleep(1)
-        driver.switch_to.alert.accept()'''
+        usernameCenter = driver.find_element_by_id("auth_key")
+        usernameCenter.send_keys(username)
 
-        # Sometimes additional screen pops up to authenticate password, this tests for it,
-        try:
-            WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "w_password")))
-            passwordCenter = driver.find_element_by_id("w_password")
-            passwordCenter.send_keys(password)
+        passwordCenter = driver.find_element_by_id("password")
+        passwordCenter.send_keys(password)
 
-            button = driver.find_elements_by_xpath("//input")
-            button = button[3]
-
-            # the moment we've all been waiting for
-            button.click()
-        except:
-            pass
+        buttonCenter = driver
 
 
     def fetchData(csvLocation):
