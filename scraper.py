@@ -22,7 +22,7 @@ try:
         # driver = webdriver.Firefox()
         # driver.set_window_size(1920, 1080)
         options = Options()
-        options.add_argument("--headless")
+        #options.add_argument("--headless")
         driver = webdriver.Chrome(chrome_options=options)
         driver.set_window_size(1920, 1080)
 
@@ -41,7 +41,8 @@ try:
         passwordCenter = driver.find_element_by_id("password")
         passwordCenter.send_keys(password)
 
-        buttonCenter = driver
+        buttonCenter = driver.find_element_by_class_name("btn-primary")
+        buttonCenter.click()
 
 
     def fetchData(csvLocation):
@@ -64,10 +65,14 @@ try:
 
 
     def getMasterAccounts():
-        driver.get("https://arpmp-ph.hidinc.com/arappl/bdarpdmq/pmqrecipqry.html?a=0&page=recipqry&accept-box=yes")
+        driver.get("https://arkansas.pmpaware.net/rx_search_requests/new")
+        try:
+            testName = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "rx_search_request_last_name")))
+        except:
+            pass
 
-        if len(driver.find_elements_by_id("suplist")) > 0:
-            masterList = Select(driver.find_element_by_id("suplist"))
+        if len(driver.find_element_by_id("rx_search_request_delegator_id").find_elements_by_tag_name("option")) > 0:
+            masterList = Select(driver.find_element_by_id("rx_search_request_delegator_id"))
             masterOptions = masterList.options
             for i in range(0, len(masterOptions)):
                 masterOptions[i] = masterOptions[i].text
@@ -82,35 +87,40 @@ try:
         dob = datetime.datetime.strptime(dob, "%m/%d/%Y")
         dob = dob.date().strftime("%m/%d/%Y")
 
-        driver.get("https://arpmp-ph.hidinc.com/arappl/bdarpdmq/pmqrecipqry.html?a=0&page=recipqry&accept-box=yes")
+        driver.get("https://arkansas.pmpaware.net/rx_search_requests/new")
 
         # fills in boxes with patient names
-        lastNameBox = driver.find_element_by_id("recip-name")
+        try:
+            testName = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "rx_search_request_last_name")))
+        except:
+            pass
+
+        lastNameBox = driver.find_element_by_id("rx_search_request_last_name")
         lastNameBox.send_keys(lastName)
 
-        firstNameBox = driver.find_element_by_id("recip-fname")
+
+        firstNameBox = driver.find_element_by_id("rx_search_request_first_name")
         firstNameBox.send_keys(firstName)
 
-        dobBox = driver.find_element_by_id("recip-dob")
+        dobBox = driver.find_element_by_id("rx_search_request_birthdate")
+        dobBox.clear()
         dobBox.send_keys(dob)
 
-        beginDate = driver.find_element_by_id("disp-bdate")
+        beginDate = driver.find_element_by_id("rx_search_request_filled_at_begin")
         beginDate.clear()
         beginDate.send_keys(date)
 
         # checks for master account; if exists, it asks user which one to use, then selects it
-        if len(driver.find_elements_by_id("suplist")) > 0:
-            masterList = Select(driver.find_element_by_id("suplist"))
+        if len(driver.find_element_by_id("rx_search_request_delegator_id").find_elements_by_tag_name("option")) > 0:
+            masterList = Select(driver.find_element_by_id("rx_search_request_delegator_id"))
             masterOptions = masterList.options
             global masterChoice
             masterAccount = masterOptions[masterChoice]
             masterAccount.click()
 
-        # selects next button twice, one for each page
-        submitButton = driver.find_element_by_xpath("//button[@type='submit']")
-        submitButton.click()
 
-        submitButton = driver.find_element_by_xpath("//button[@type='submit']")
+        # selects next button
+        submitButton = driver.find_element_by_name("commit")
         submitButton.click()
 
         # grabs first inital
@@ -119,7 +129,15 @@ try:
 
         global saveLoc
         # now that we are on the prescription page, we take a screenshot
-        driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))
+        if "hide" in driver.find_element_by_id("patients_found_but_no_results_modal").get_attribute("class"):
+            try:
+                #cat = WebDriverWait(driver, 10).until(EC.url_changes)
+                screenTitle = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, "results")))
+            except:
+                pass
+            finally:
+                driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))
         return lastName
 
 

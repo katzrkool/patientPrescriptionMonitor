@@ -1,5 +1,5 @@
 # Patient Presciption Monitor
-Download patient prescription data from the [arkansas pmp database](https://arkansaspmp.com) for all your patients
+Download patient prescription data from the [arkansas pmp database](https://arkansas.pmpaware.net) for all your patients
 
 ## Prerequisites
 * PyQt5
