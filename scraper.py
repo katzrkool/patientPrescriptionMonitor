@@ -22,7 +22,7 @@ try:
         # driver = webdriver.Firefox()
         # driver.set_window_size(1920, 1080)
         options = Options()
-        options.add_argument("--headless")
+        #options.add_argument("--headless")
         driver = webdriver.Chrome(chrome_options=options)
         driver.set_window_size(1920, 1080)
 
@@ -129,15 +129,16 @@ try:
 
         global saveLoc
         # now that we are on the prescription page, we take a screenshot
-        if "hide" in driver.find_element_by_id("patients_found_but_no_results_modal").get_attribute("class"):
+        if "in" not in driver.find_element_by_id("patients_found_but_no_results_modal").get_attribute("class"):
             try:
-                #cat = WebDriverWait(driver, 10).until(EC.url_changes)
-                screenTitle = WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.CLASS_NAME, "results")))
+                cat = WebDriverWait(driver, 2).until(EC.url_changes)
             except:
                 pass
             finally:
                 driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))
+        else:
+            print("cat")
+            driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))
         return lastName
 
 
