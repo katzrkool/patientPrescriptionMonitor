@@ -22,7 +22,7 @@ try:
         # driver = webdriver.Firefox()
         # driver.set_window_size(1920, 1080)
         options = Options()
-        #options.add_argument("--headless")
+        options.add_argument("--headless")
         driver = webdriver.Chrome(chrome_options=options)
         driver.set_window_size(1920, 1080)
 
@@ -93,7 +93,7 @@ try:
         try:
             testName = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "rx_search_request_last_name")))
         except:
-            pass
+            driver.get("https://arkansas.pmpaware.net/rx_search_requests/new")
 
         lastNameBox = driver.find_element_by_id("rx_search_request_last_name")
         lastNameBox.send_keys(lastName)
@@ -128,8 +128,14 @@ try:
         fileName = lastName + firstInitial
 
         global saveLoc
-        # now that we are on the prescription page, we take a screenshot
-        if "in" not in driver.find_element_by_id("patients_found_but_no_results_modal").get_attribute("class"):
+        # now that we are on the prescription page, we take a screenshot+
+        try:
+            WebDriverWait(driver, 1).until(wait_for_display((By.CSS_SELECTOR, ".indeterminate_progress .small")))
+        except:
+            driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))
+        #float: right; display: block;
+
+        '''if "false" == driver.find_element_by_id("patients_found_but_no_results_modal").get_attribute("aria-hidden"):
             try:
                 cat = WebDriverWait(driver, 2).until(EC.url_changes)
             except:
@@ -138,8 +144,17 @@ try:
                 driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))
         else:
             print("cat")
-            driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))
+            driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))'''
         return lastName
+
+    #Credit to StackOverflow User Alecxe
+    class wait_for_display(object):
+        def __init__(self, locator):
+            self.locator = locator
+
+        def __call__(self, driver):
+            element = EC._find_element(driver, self.locator)
+            return element.value_of_css_property("display") == "none"
 
 
     def killTheBrowser():

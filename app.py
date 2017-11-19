@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QLabel, QGroupBox, QDesk
 from PyQt5.QtCore import QThread, pyqtSignal, QCoreApplication, pyqtSlot
 import scraper
 import sys
-
+import time
 
 # TODO windows https://github.com/kybu/headless-selenium-for-win
 
@@ -67,26 +67,6 @@ class application(QMainWindow):
     def updateProgress(self, value):
         self.mainPage.progressBar.setValue(value)
 
-    def runScraper(self):
-        self.setStatus("Pick a file to read from")
-        fname = QFileDialog.getOpenFileName(self, 'Open file', "~")
-        self.csvFile = fname[0]
-
-        saveLoc = QFileDialog.getExistingDirectory(self, 'Save Location', "~")
-        self.saveLoc = saveLoc
-
-        self.mainPage.progressBar.setValue(0)
-
-        username = self.mainPage.usernameInput.text()
-        password = self.mainPage.passwordInput.text()
-
-        self.setStatus("Initializing")
-
-        self.sgm = scrapeGrabMaster(username, password, self.csvFile)
-        self.sgm.masterList.connect(self.chooser)
-        self.sgm.status.connect(self.setStatus)
-        self.sgm.start(QThread.NormalPriority)
-
     def center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
@@ -94,76 +74,87 @@ class application(QMainWindow):
 
         self.move(qr.topLeft())
 
-    @pyqtSlot(list)
-    def chooser(self, masterList):
+
+    def runScraper(self,):
+        self.setStatus("Pick a file to read from")
+        fname = QFileDialog.getOpenFileName(self, 'Open file', "~")
+        self.csvFile = fname[0]
+
+        saveLoc = QFileDialog.getExistingDirectory(self, 'Save Location', "~")
+        self.saveLoc = saveLoc
+
 
         username = self.mainPage.usernameInput.text()
         password = self.mainPage.passwordInput.text()
-        self.setStatus("Please select a Master Account")
-        asker = QInputDialog.getItem(self, "Master Account Selection", "Pick a Master Account to use", masterList, 0, False)
-        self.setStatus("Preparing to Download")
-        self.sr = scrapeRemote(username, password, [i for i,x in enumerate(masterList) if x == asker[0]][0], self.csvFile, self.saveLoc)
+
+        self.sr = scrapeRemote(username, password, self.csvFile, self.saveLoc)
+
+        self.mainPage.progressBar.setValue(0)
 
         self.sr.status.connect(self.setStatus)
         self.sr.progress.connect(self.updateProgress)
+        self.sr.masterList.connect(self.asker)
         self.mainPage.cancel.clicked.connect(self.sr.stop)
+
         self.sr.start()
+
+    @pyqtSlot(list)
+    def asker(self, masterList):
+            self.setStatus("Please select a Master Account")
+            asker = QInputDialog.getItem(self, "Master Account Selection", "Pick a Master Account to use", masterList, 0, False)
+            self.sr.setMaster([i for i, x in enumerate(masterList) if x == asker[0]][0])
+            self.setStatus("Preparing to Download")
 
 class scrapeRemote(QThread):
     progress = pyqtSignal(int, name="Updated Progress")
-    goGoGo = False
     status = pyqtSignal(str, name="Status")
+    masterList = pyqtSignal(list, name="Master Account Choices")
 
-    def __init__(self, username, password, masterChoice, csvFile, saveLoc, parent=None):
+    def __init__(self, username, password, csvFile, saveLoc, parent=None):
         super(scrapeRemote, self).__init__(parent)
         self.username = username
         self.password = password
-        self.masterChoice = masterChoice
         self.csvFile = csvFile
         self.saveLoc = saveLoc
         self._isRunning = True
-
-    def run(self):
-        scraper.initSession(self.username, self.password, self.csvFile)
-        scraper.setSaveLocation(self.saveLoc)
-        scraper.setMasterAccount(self.masterChoice)
-        for i in range(0, len(scraper.lastNames)):
-            QCoreApplication.processEvents()
-            if self._isRunning:
-                self.status.emit("Downloaded " + scraper.downloadData(scraper.date, scraper.lastNames[i], scraper.firstNames[i],
-                                     scraper.dob[i]))
-                self.progress.emit(int(((i + 1) * 100) / len(scraper.lastNames) - 1))
-            else:
-                scraper.killTheBrowser()
-                self.status.emit("Canceled")
-                break
-        scraper.killTheBrowser()
-        if self._isRunning:
-            self.progress.emit(100)
-            self.status.emit("Finished!")
-    def stop(self):
-        self._isRunning = False
-        self.status.emit("Cancelling")
-
-class scrapeGrabMaster(QThread):
-
-    masterList = pyqtSignal(list, name="Master Account Choices")
-    status = pyqtSignal(str, name = "Status change")
-
-    def __init__(self, username, password, csvFile):
-        super(scrapeGrabMaster, self).__init__()
-        self.username = username
-        self.password = password
-        self.csvFile = csvFile
+        self.partTwo = False
 
     def run(self):
         scraper.initSession(self.username, self.password, self.csvFile)
         masterAccounts = scraper.getMasterAccounts()
-        scraper.killTheBrowser()
         if masterAccounts != False:
             self.masterList.emit(masterAccounts)
         else:
             self.status.emit("Incorrect Login Credentials! Try Again")
+            scraper.killTheBrowser()
+            self._isRunning = False
+            self.partTwo = True
+        while self.partTwo == False:
+            time.sleep(0.1)
+        if self._isRunning:
+            scraper.setSaveLocation(self.saveLoc)
+            scraper.setMasterAccount(self.masterChoice)
+            for i in range(0, len(scraper.lastNames)):
+                QCoreApplication.processEvents()
+                if self._isRunning:
+                    self.status.emit("Downloaded " + scraper.downloadData(scraper.date, scraper.lastNames[i], scraper.firstNames[i],
+                                         scraper.dob[i]))
+                    self.progress.emit(int(((i + 1) * 100) / len(scraper.lastNames) - 1))
+                else:
+                    scraper.killTheBrowser()
+                    self.status.emit("Canceled")
+                    break
+            scraper.killTheBrowser()
+            if self._isRunning:
+                self.progress.emit(100)
+                self.status.emit("Finished!")
+    def stop(self):
+        self._isRunning = False
+        self.status.emit("Cancelling")
+
+    def setMaster(self, master):
+        self.masterChoice = master
+        self.partTwo = True
 
 
 if __name__ == "__main__":
