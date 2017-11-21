@@ -22,7 +22,7 @@ try:
         # driver = webdriver.Firefox()
         # driver.set_window_size(1920, 1080)
         options = Options()
-        options.add_argument("--headless")
+        #options.add_argument("--headless")
         driver = webdriver.Chrome(chrome_options=options)
         driver.set_window_size(1920, 1080)
 
@@ -43,6 +43,19 @@ try:
 
         buttonCenter = driver.find_element_by_class_name("btn-primary")
         buttonCenter.click()
+
+        try:
+            screenTitle = WebDriverWait(driver, 2).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/h2')))
+        except:
+            usernameCenter = driver.find_element_by_id("auth_key")
+            usernameCenter.send_keys(username)
+
+            passwordCenter = driver.find_element_by_id("password")
+            passwordCenter.send_keys(password)
+
+            buttonCenter = driver.find_element_by_class_name("btn-primary")
+            buttonCenter.click()
 
 
     def fetchData(csvLocation):
@@ -91,7 +104,7 @@ try:
 
         # fills in boxes with patient names
         try:
-            testName = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "rx_search_request_last_name")))
+            testName = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.ID, "rx_search_request_last_name")))
         except:
             driver.get("https://arkansas.pmpaware.net/rx_search_requests/new")
 
@@ -129,10 +142,29 @@ try:
 
         global saveLoc
         # now that we are on the prescription page, we take a screenshot+
+        print("lit ")
+        #WebDriverWait(driver, 1).until(wait_for_display((By.CSS_SELECTOR, ".indeterminate_progress .small")))
+        #TODO style not display. maybe style.display or something
         try:
-            WebDriverWait(driver, 1).until(wait_for_display((By.CSS_SELECTOR, ".indeterminate_progress .small")))
-        except:
+            while "none" != driver.find_element_by_class_name("rx_request_new_spinner").find_element_by_tag_name("i").value_of_css_property("display"):
+                WebDriverWait(driver, 0.1)
+            print("mick")
+            print("dit")
+            print(driver.find_element_by_id("multiple_patient_confirmation_modal").get_attribute("aria-hidden"))
+            if "false" == driver.find_element_by_id("multiple_patient_confirmation_modal").get_attribute("aria-hidden"):
+                WebDriverWait(driver, 100)
+                print("zit")
+                patientChoices = driver.find_elements_by_class_name("patient_group_table")
+                print("crit")
+                print(len(patientChoices))
+                for i in patientChoices:
+                    i.find_element_by_xpath(".input[@type=checkbox]").click()
+                print("mit")
+                driver.find_element_by_xpath('//*[@id="multiple_patient_confirmation"]/div[4]/div/button[2]').click()
+                print("legit")
+        finally:
             driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))
+
         #float: right; display: block;
 
         '''if "false" == driver.find_element_by_id("patients_found_but_no_results_modal").get_attribute("aria-hidden"):
@@ -145,17 +177,11 @@ try:
         else:
             print("cat")
             driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))'''
+        print(driver.find_element_by_class_name("rx_request_new_spinner").find_element_by_tag_name("i").get_attribute(
+            "style"))
+        print(lastName)
+
         return lastName
-
-    #Credit to StackOverflow User Alecxe
-    class wait_for_display(object):
-        def __init__(self, locator):
-            self.locator = locator
-
-        def __call__(self, driver):
-            element = EC._find_element(driver, self.locator)
-            return element.value_of_css_property("display") == "none"
-
 
     def killTheBrowser():
         driver.quit()

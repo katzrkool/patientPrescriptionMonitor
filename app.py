@@ -77,10 +77,10 @@ class application(QMainWindow):
 
     def runScraper(self,):
         self.setStatus("Pick a file to read from")
-        fname = QFileDialog.getOpenFileName(self, 'Open file', "~")
+        fname = QFileDialog.getOpenFileName(self, 'Open file', "home")
         self.csvFile = fname[0]
 
-        saveLoc = QFileDialog.getExistingDirectory(self, 'Save Location', "~")
+        saveLoc = QFileDialog.getExistingDirectory(self, 'Save Location', "home")
         self.saveLoc = saveLoc
 
 
@@ -120,6 +120,7 @@ class scrapeRemote(QThread):
         self.partTwo = False
 
     def run(self):
+        self.status.emit("Initializing")
         scraper.initSession(self.username, self.password, self.csvFile)
         masterAccounts = scraper.getMasterAccounts()
         if masterAccounts != False:
