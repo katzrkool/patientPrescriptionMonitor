@@ -1,5 +1,5 @@
 import datetime
-import urllib
+import time
 
 import pandas as pd
 
@@ -9,8 +9,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.chrome.options import Options
-
-# TODO windows https://github.com/kybu/headless-selenium-for-win
 
 # Initializing browsers and virtual displays
 try:
@@ -22,7 +20,7 @@ try:
         # driver = webdriver.Firefox()
         # driver.set_window_size(1920, 1080)
         options = Options()
-        #options.add_argument("--headless")
+        options.add_argument("--headless")
         driver = webdriver.Chrome(chrome_options=options)
         driver.set_window_size(1920, 1080)
 
@@ -111,7 +109,6 @@ try:
         lastNameBox = driver.find_element_by_id("rx_search_request_last_name")
         lastNameBox.send_keys(lastName)
 
-
         firstNameBox = driver.find_element_by_id("rx_search_request_first_name")
         firstNameBox.send_keys(firstName)
 
@@ -145,9 +142,15 @@ try:
         print("lit ")
         #WebDriverWait(driver, 1).until(wait_for_display((By.CSS_SELECTOR, ".indeterminate_progress .small")))
         #TODO style not display. maybe style.display or something
+        time.sleep(0.1)
         try:
-            while "none" != driver.find_element_by_class_name("rx_request_new_spinner").find_element_by_tag_name("i").value_of_css_property("display"):
-                WebDriverWait(driver, 0.1)
+            spinner = driver.find_element_by_class_name("rx_request_new_spinner")
+            while "none" != spinner.find_element_by_tag_name("i").value_of_css_property("display"):
+                time.sleep(0.1)
+                spinner = driver.find_element_by_class_name("rx_request_new_spinner")
+            while not popup(True):
+                time.sleep(0.1)
+            time.sleep(0.5)
             print("mick")
             print("dit")
             print(driver.find_element_by_id("multiple_patient_confirmation_modal").get_attribute("aria-hidden"))
@@ -162,6 +165,8 @@ try:
                 print("mit")
                 driver.find_element_by_xpath('//*[@id="multiple_patient_confirmation"]/div[4]/div/button[2]').click()
                 print("legit")
+        except:
+            pass
         finally:
             driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))
 
@@ -177,8 +182,7 @@ try:
         else:
             print("cat")
             driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))'''
-        print(driver.find_element_by_class_name("rx_request_new_spinner").find_element_by_tag_name("i").get_attribute(
-            "style"))
+
         print(lastName)
 
         return lastName
@@ -191,6 +195,23 @@ try:
         setup()
         pushTheButton(username, password)
         fetchData(csvFile)
+
+    def popup(bool):
+        if driver.find_element_by_id("multiple_patient_confirmation_modal").get_attribute("aria-hidden") == "true":
+            if bool:
+                return True
+            else:
+                return "multiple"
+        elif driver.find_element_by_id("patients_found_but_no_results_modal").get_attribute("aria-hidden") ==  "true":
+            if bool:
+                return True
+            else:
+                return "no results"
+        else:
+            if bool:
+                return False
+            else:
+                return "no"
 
 
     def setMasterAccount(choice):
