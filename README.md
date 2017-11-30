@@ -34,5 +34,5 @@ If your account is a subaccount, it'll ask you which master account to use.
 It'll then download all of your patient's prescription history. When the progress bar is full and text on the screen says Finished, you can close the app. All the data will be in the folder you selected. Enjoy!
 
 ## To Do
-[ ] If “d” is passed as an argument, don’t run chrome headlessly
-[ ] Make website for program
+- [ ] If “d” is passed as an argument, don’t run chrome headlessly
+- [ ] Make website for program
