@@ -42,6 +42,14 @@ try:
         buttonCenter = driver.find_element_by_class_name("btn-primary")
         buttonCenter.click()
 
+        warningText = '''Warning\nAuthentication failed, please try again.\nDISMISS'''
+
+        try:
+            if driver.find_element_by_id("alert-alert").text == warningText:
+                return False
+        except:
+            pass
+
         try:
             screenTitle = WebDriverWait(driver, 2).until(
                 EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/h2')))
@@ -138,8 +146,7 @@ try:
         fileName = lastName + firstInitial
 
         global saveLoc
-        # now that we are on the prescription page, we take a screenshot+
-        print("lit ")
+        # now that we are on the prescription page, we take a screenshot
         #WebDriverWait(driver, 1).until(wait_for_display((By.CSS_SELECTOR, ".indeterminate_progress .small")))
         #TODO style not display. maybe style.display or something
         time.sleep(0.1)
@@ -151,20 +158,12 @@ try:
             while not popup(True):
                 time.sleep(0.1)
             time.sleep(0.5)
-            print("mick")
-            print("dit")
-            print(driver.find_element_by_id("multiple_patient_confirmation_modal").get_attribute("aria-hidden"))
             if "false" == driver.find_element_by_id("multiple_patient_confirmation_modal").get_attribute("aria-hidden"):
                 WebDriverWait(driver, 100)
-                print("zit")
                 patientChoices = driver.find_elements_by_class_name("patient_group_table")
-                print("crit")
-                print(len(patientChoices))
                 for i in patientChoices:
                     i.find_element_by_xpath(".input[@type=checkbox]").click()
-                print("mit")
                 driver.find_element_by_xpath('//*[@id="multiple_patient_confirmation"]/div[4]/div/button[2]').click()
-                print("legit")
         except:
             pass
         finally:
@@ -180,10 +179,8 @@ try:
             finally:
                 driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))
         else:
-            print("cat")
             driver.get_screenshot_as_file("{}/{}.png".format(saveLoc, fileName))'''
 
-        print(lastName)
 
         return lastName
 
@@ -193,7 +190,8 @@ try:
 
     def initSession(username, password, csvFile):
         setup()
-        pushTheButton(username, password)
+        if pushTheButton(username, password) == False:
+            return False
         fetchData(csvFile)
 
     def popup(bool):

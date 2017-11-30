@@ -99,11 +99,17 @@ class application(QMainWindow):
             self.saveLogin = True
         else:
             self.saveLogin = False
-        print(self.saveLogin)
 
     @pyqtSlot(str)
     def setStatus(self, status):
         self.mainPage.status.setText(status)
+        if status == "Incorrect Login":
+            alert = QMessageBox()
+            alert.setIcon(QMessageBox.Critical)
+            alert.setText("Incorrect Login!")
+            alert.setStandardButtons(QMessageBox.Ok)
+            alert.exec_()
+            self.mainPage.passwordInput.setText("")
 
     @pyqtSlot(int)
     def updateProgress(self, value):
@@ -182,6 +188,7 @@ class application(QMainWindow):
             self.setStatus("Cancelled")
             return False
 
+        self.setStatus("Pick a folder to save in.")
         pickFolder = QMessageBox()
         pickFolder.setIcon(QMessageBox.Question)
         pickFolder.setText("Please pick a folder to save screenshots in.")
@@ -230,15 +237,21 @@ class scrapeRemote(QThread):
 
     def run(self):
         self.status.emit("Initializing")
-        scraper.initSession(self.username, self.password, self.csvFile)
-        masterAccounts = scraper.getMasterAccounts()
-        if masterAccounts != False:
-            self.masterList.emit(masterAccounts)
-        else:
-            self.status.emit("Incorrect Login Credentials! Try Again")
+        if scraper.initSession(self.username, self.password, self.csvFile) == False:
             scraper.killTheBrowser()
+            self.status.emit("Incorrect Login")
             self._isRunning = False
             self.partTwo = True
+
+        if self.partTwo == False:
+            masterAccounts = scraper.getMasterAccounts()
+            if masterAccounts != False:
+                self.masterList.emit(masterAccounts)
+            else:
+                self.status.emit("Incorrect Login Credentials! Try Again")
+                scraper.killTheBrowser()
+                self._isRunning = False
+                self.partTwo = True
         while self.partTwo == False:
             time.sleep(0.1)
         if self._isRunning:
