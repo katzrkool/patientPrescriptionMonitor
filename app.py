@@ -1,20 +1,43 @@
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QLabel, QGroupBox, QDesktopWidget, QLineEdit, QPushButton,
-                             QProgressBar, QInputDialog, QFileDialog)
-from PyQt5.QtCore import QThread, pyqtSignal, QCoreApplication, pyqtSlot
+                             QProgressBar, QInputDialog, QFileDialog, QCheckBox, QMessageBox)
+from PyQt5.QtCore import QThread, pyqtSignal, QCoreApplication, pyqtSlot, Qt
 import scraper
 import sys
 import time
+import json
+import os
+from pathlib import Path
 
 # TODO windows https://github.com/kybu/headless-selenium-for-win
 
 class application(QMainWindow):
+
+    prefs = {}
+    defaultValues = {
+        "username": "",
+        "password": ""
+    }
+
     def __init__(self):
         super().__init__()
 
         self.mainPage = QGroupBox()
 
+        self.saveLogin = False;
+
+        self.fetchPrefs()
+
         self.initUI()
         self.pop = None
+
+    def fetchPrefs(self):
+        try:
+            with open("preferences.json") as f:
+                self.prefs = json.load(f)
+                if len(self.prefs["username"]) > 0 and len(self.prefs["password"]) > 0:
+                    self.toggleLogin(Qt.Checked)
+        except:
+            self.prefs.update(self.defaultValues)
 
     def initUI(self):
         mainPage = self.mainPage
@@ -26,6 +49,7 @@ class application(QMainWindow):
         mainPage.usernameInput = QLineEdit(mainPage)
         mainPage.usernameInput.move(225, 100)
         mainPage.usernameInput.resize(150, 20)
+        mainPage.usernameInput.setText(self.prefs["username"])
 
         mainPage.passwordLabel = QLabel("Password:", mainPage)
         mainPage.passwordLabel.move(125, 150)
@@ -34,7 +58,17 @@ class application(QMainWindow):
         mainPage.passwordInput.move(225, 150)
         mainPage.passwordInput.resize(150, 20)
         mainPage.passwordInput.setEchoMode(QLineEdit.Password)
+        mainPage.passwordInput.setText(self.prefs["password"])
         mainPage.passwordInput.returnPressed.connect(self.runScraper)
+
+        mainPage.saveLogin = QCheckBox("Save Login", mainPage)
+        if self.saveLogin:
+            mainPage.saveLogin.setCheckState(Qt.Unchecked)
+        else:
+            mainPage.saveLogin.setCheckState(Qt.Checked)
+        mainPage.saveLogin.move(400, 150)
+        mainPage.saveLogin.toggle()
+        mainPage.saveLogin.stateChanged.connect(self.toggleLogin)
 
         mainPage.submit = QPushButton("Submit", mainPage)
         mainPage.submit.resize(mainPage.submit.sizeHint())
@@ -48,16 +82,24 @@ class application(QMainWindow):
         mainPage.status = QLabel("", mainPage)
         mainPage.status.move(150, 300)
         mainPage.status.resize(300,20)
+        mainPage.status.setAlignment(Qt.AlignCenter)
 
         mainPage.progressBar = QProgressBar(mainPage)
         mainPage.progressBar.move(125, 250)
         mainPage.progressBar.resize(350, 15)
 
-        mainPage.resize(600, 400)
+        mainPage.setFixedSize(600,400)
         self.center()
 
         mainPage.setWindowTitle("Patient Prescription Monitor")
         self.mainPage.show()
+
+    def toggleLogin(self, state):
+        if state == Qt.Checked:
+            self.saveLogin = True
+        else:
+            self.saveLogin = False
+        print(self.saveLogin)
 
     @pyqtSlot(str)
     def setStatus(self, status):
@@ -76,16 +118,83 @@ class application(QMainWindow):
 
 
     def runScraper(self,):
-        self.setStatus("Pick a file to read from")
-        fname = QFileDialog.getOpenFileName(self, 'Open file', "home")
-        self.csvFile = fname[0]
-
-        saveLoc = QFileDialog.getExistingDirectory(self, 'Save Location', "home")
-        self.saveLoc = saveLoc
-
 
         username = self.mainPage.usernameInput.text()
         password = self.mainPage.passwordInput.text()
+
+        if len(username) + len(password) == 0:
+            self.setStatus("Please enter a username and password!")
+            alert = QMessageBox()
+            alert.setIcon(QMessageBox.Critical)
+            alert.setText("Please enter a username and password!")
+            alert.setStandardButtons(QMessageBox.Ok)
+            alert.exec_()
+            return False
+        elif len(username) == 0:
+            self.setStatus("Please enter a username!")
+            alert = QMessageBox()
+            alert.setIcon(QMessageBox.Critical)
+            alert.setText("Please enter a username!")
+            alert.setStandardButtons(QMessageBox.Ok)
+            alert.exec_()
+            return False
+        elif len(password) == 0:
+            self.setStatus("Please enter a password!")
+            alert = QMessageBox()
+            alert.setIcon(QMessageBox.Critical)
+            alert.setText("Please enter a password!")
+            alert.setStandardButtons(QMessageBox.Ok)
+            alert.exec_()
+            return False
+
+        overwrite = False
+        if self.saveLogin:
+            try:
+                with open("preferences.json") as f:
+                    data = json.load(f)
+                    if data["username"] != username or data["password"] != password:
+                        overwrite = True
+            except:
+                overwrite = True
+            finally:
+                if overwrite == True:
+                    with open("preferences.json", "w") as fp:
+                        json.dump({"username": username, "password": password}, fp)
+
+        else:
+            try:
+                os.remove("preferences.json")
+            except:
+                pass
+
+
+        self.setStatus("Pick a file to read from")
+        pickFile = QMessageBox()
+        pickFile.setIcon(QMessageBox.Question)
+        pickFile.setText("Please pick a csv file to get patient names from.")
+        pickFile.setStandardButtons(QMessageBox.Ok)
+        pickFile.exec_()
+
+        fname = QFileDialog.getOpenFileName(self, 'Open file', str(Path.home()), "CSV (*.csv)")
+        if len(fname[0]) > 0:
+            self.csvFile = fname[0]
+        else:
+            self.setStatus("Cancelled")
+            return False
+
+        pickFolder = QMessageBox()
+        pickFolder.setIcon(QMessageBox.Question)
+        pickFolder.setText("Please pick a folder to save screenshots in.")
+        pickFolder.setStandardButtons(QMessageBox.Ok)
+        pickFolder.exec_()
+
+        saveLoc = QFileDialog.getExistingDirectory(self, 'Save Location', str(Path.home()))
+        self.saveLoc = saveLoc
+        if len(saveLoc[0]) > 0:
+            self.csvFile = fname[0]
+        else:
+            self.setStatus("Cancelled")
+            return False
 
         self.sr = scrapeRemote(username, password, self.csvFile, self.saveLoc)
 
