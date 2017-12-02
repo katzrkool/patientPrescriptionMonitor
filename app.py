@@ -91,7 +91,7 @@ class application(QMainWindow):
         mainPage.setFixedSize(600,400)
         self.center()
 
-        mainPage.setWindowTitle("Patient Prescription Monitor")
+        mainPage.setWindowTitle("CheckNarc")
         self.mainPage.show()
 
     def toggleLogin(self, state):
