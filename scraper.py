@@ -1,7 +1,7 @@
 import datetime
 import time
 
-import pandas as pd
+from pandas import read_csv as read_csv
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -70,7 +70,7 @@ try:
         global dob
 
         # grabs the patient data
-        data = pd.read_csv(csvLocation)
+        data = read_csv(csvLocation)
 
         # renames columns so python can read it
         data = data.rename(
