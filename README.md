@@ -1,4 +1,4 @@
-# Patient Presciption Monitor
+# CheckNarc
 Download patient prescription data from the [arkansas pmp database](https://arkansas.pmpaware.net) for all your patients
 
 ## Prerequisites
