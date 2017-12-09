@@ -5,14 +5,12 @@ import scraper
 import sys
 import time
 import json
-import os
 from pathlib import Path
-
-# TODO windows https://github.com/kybu/headless-selenium-for-win
 
 class application(QMainWindow):
 
     prefs = {}
+    login = {}
     defaultValues = {
         "username": "",
         "password": ""
@@ -28,16 +26,18 @@ class application(QMainWindow):
         self.fetchPrefs()
 
         self.initUI()
+        self.mainPage.show()
         self.pop = None
 
     def fetchPrefs(self):
         try:
             with open("preferences.json") as f:
                 self.prefs = json.load(f)
-                if len(self.prefs["username"]) > 0 and len(self.prefs["password"]) > 0:
+                self.login = self.prefs["login"]
+                if len(self.login["username"]) > 0 and len(self.login["password"]) > 0:
                     self.toggleLogin(Qt.Checked)
         except:
-            self.prefs.update(self.defaultValues)
+            self.login.update(self.defaultValues)
 
     def initUI(self):
         mainPage = self.mainPage
@@ -49,7 +49,7 @@ class application(QMainWindow):
         mainPage.usernameInput = QLineEdit(mainPage)
         mainPage.usernameInput.move(225, 100)
         mainPage.usernameInput.resize(150, 20)
-        mainPage.usernameInput.setText(self.prefs["username"])
+        mainPage.usernameInput.setText(self.login["username"])
 
         mainPage.passwordLabel = QLabel("Password:", mainPage)
         mainPage.passwordLabel.move(125, 150)
@@ -58,7 +58,7 @@ class application(QMainWindow):
         mainPage.passwordInput.move(225, 150)
         mainPage.passwordInput.resize(150, 20)
         mainPage.passwordInput.setEchoMode(QLineEdit.Password)
-        mainPage.passwordInput.setText(self.prefs["password"])
+        mainPage.passwordInput.setText(self.login["password"])
         mainPage.passwordInput.returnPressed.connect(self.runScraper)
 
         mainPage.saveLogin = QCheckBox("Save Login", mainPage)
@@ -88,11 +88,15 @@ class application(QMainWindow):
         mainPage.progressBar.move(125, 250)
         mainPage.progressBar.resize(350, 15)
 
+        mainPage.help = QPushButton("Help", mainPage)
+        mainPage.help.resize(mainPage.help.sizeHint())
+        mainPage.help.move(450, 350)
+        mainPage.help.clicked.connect(self.help)
+
         mainPage.setFixedSize(600,400)
         self.center()
 
         mainPage.setWindowTitle("CheckNarc")
-        self.mainPage.show()
 
     def toggleLogin(self, state):
         if state == Qt.Checked:
@@ -153,26 +157,22 @@ class application(QMainWindow):
             alert.exec_()
             return False
 
+        data={}
+
         overwrite = False
         if self.saveLogin:
             try:
                 with open("preferences.json") as f:
-                    data = json.load(f)
-                    if data["username"] != username or data["password"] != password:
+                    login = json.load(f)["login"]
+                    if login["username"] != username or login["password"] != password:
                         overwrite = True
             except:
                 overwrite = True
             finally:
                 if overwrite == True:
+                    data.update({"login":{"username": username, "password": password}})
                     with open("preferences.json", "w") as fp:
-                        json.dump({"username": username, "password": password}, fp)
-
-        else:
-            try:
-                os.remove("preferences.json")
-            except:
-                pass
-
+                        json.dump(data, fp)
 
         self.setStatus("Pick a file to read from")
         pickFile = QMessageBox()
@@ -218,8 +218,13 @@ class application(QMainWindow):
     def asker(self, masterList):
             self.setStatus("Please select a Master Account")
             asker = QInputDialog.getItem(self, "Master Account Selection", "Pick a Master Account to use", masterList, 0, False)
-            self.sr.setMaster([i for i, x in enumerate(masterList) if x == asker[0]][0])
-            self.setStatus("Preparing to Download")
+            if asker[1] == True:
+                self.sr.setMaster([i for i, x in enumerate(masterList) if x == asker[0]][0])
+                self.setStatus("Preparing to Download")
+            else:
+                self.setStatus("Cancelling")
+                self.sr.stop()
+                self.setStatus("Cancelled")
 
 class scrapeRemote(QThread):
     progress = pyqtSignal(int, name="Updated Progress")
@@ -245,7 +250,7 @@ class scrapeRemote(QThread):
 
         if self.partTwo == False:
             masterAccounts = scraper.getMasterAccounts()
-            if masterAccounts != False:
+            if masterAccounts != False and self._isRunning:
                 self.masterList.emit(masterAccounts)
             else:
                 self.status.emit("Incorrect Login Credentials! Try Again")
