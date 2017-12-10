@@ -104,6 +104,8 @@ class application(QMainWindow):
         else:
             self.saveLogin = False
 
+    def help(self):
+
     @pyqtSlot(str)
     def setStatus(self, status):
         self.mainPage.status.setText(status)
