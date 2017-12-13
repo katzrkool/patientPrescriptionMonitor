@@ -6,6 +6,7 @@ import sys
 import time
 import json
 from pathlib import Path
+import webbrowser
 
 class application(QMainWindow):
 
@@ -26,6 +27,7 @@ class application(QMainWindow):
         self.fetchPrefs()
 
         self.initUI()
+        self.helpWindow = helpWindow()
         self.mainPage.show()
         self.pop = None
 
@@ -88,10 +90,15 @@ class application(QMainWindow):
         mainPage.progressBar.move(125, 250)
         mainPage.progressBar.resize(350, 15)
 
+        mainPage.donate = QPushButton("Donate", mainPage)
+        mainPage.donate.resize(mainPage.donate.sizeHint())
+        mainPage.donate.move(50, 350)
+        mainPage.donate.clicked.connect(lambda: webbrowser.open("https://checknarc.com/#donate"))
+
         mainPage.help = QPushButton("Help", mainPage)
         mainPage.help.resize(mainPage.help.sizeHint())
         mainPage.help.move(450, 350)
-        mainPage.help.clicked.connect(self.help)
+        mainPage.help.clicked.connect(lambda: self.helpWindow.show())
 
         mainPage.setFixedSize(600,400)
         self.center()
@@ -104,7 +111,6 @@ class application(QMainWindow):
         else:
             self.saveLogin = False
 
-    def help(self):
 
     @pyqtSlot(str)
     def setStatus(self, status):
@@ -227,6 +233,15 @@ class application(QMainWindow):
                 self.setStatus("Cancelling")
                 self.sr.stop()
                 self.setStatus("Cancelled")
+
+class helpWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.initUI()
+
+    def initUI(self):
+        pass
 
 class scrapeRemote(QThread):
     progress = pyqtSignal(int, name="Updated Progress")
