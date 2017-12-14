@@ -28,7 +28,6 @@ class application(QMainWindow):
         self.fetchPrefs()
 
         self.initUI()
-        self.helpWindow = helpWindow()
         self.mainPage.show()
         self.pop = None
 
@@ -101,7 +100,7 @@ class application(QMainWindow):
         mainPage.help = QPushButton("Help", mainPage)
         mainPage.help.resize(mainPage.help.sizeHint())
         mainPage.help.move(450, 350)
-        mainPage.help.clicked.connect(lambda: self.helpWindow.show())
+        mainPage.help.clicked.connect(lambda: webbrowser.open("https://checknarc.com/help.html"))
 
         mainPage.setFixedSize(600,400)
         self.center()
@@ -168,7 +167,7 @@ class application(QMainWindow):
             alert.exec_()
             return False
 
-        data={}
+        data = {}
 
         overwrite = False
         if self.saveLogin:
@@ -237,15 +236,6 @@ class application(QMainWindow):
                 self.sr.stop()
                 self.setStatus("Cancelled")
 
-class helpWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-
-        self.initUI()
-
-    def initUI(self):
-        pass
-
 class scrapeRemote(QThread):
     progress = pyqtSignal(int, name="Updated Progress")
     status = pyqtSignal(str, name="Status")
@@ -270,7 +260,9 @@ class scrapeRemote(QThread):
 
         if self.partTwo == False:
             masterAccounts = scraper.getMasterAccounts()
-            if masterAccounts != False and self._isRunning:
+            if masterAccounts == "No Master Accounts!":
+                self.partTwo = True
+            elif masterAccounts != False and self._isRunning:
                 self.masterList.emit(masterAccounts)
             else:
                 self.status.emit("Incorrect Login Credentials! Try Again")
@@ -281,7 +273,10 @@ class scrapeRemote(QThread):
             time.sleep(0.1)
         if self._isRunning:
             scraper.setSaveLocation(self.saveLoc)
-            scraper.setMasterAccount(self.masterChoice)
+            try:
+                scraper.setMasterAccount(self.masterChoice)
+            except:
+                scraper.setMasterAccount(None)
             for i in range(0, len(scraper.lastNames)):
                 QCoreApplication.processEvents()
                 if self._isRunning:

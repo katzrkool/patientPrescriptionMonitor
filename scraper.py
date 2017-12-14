@@ -88,16 +88,18 @@ try:
         try:
             testName = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "rx_search_request_last_name")))
         except:
-            pass
-
-        if len(driver.find_element_by_id("rx_search_request_delegator_id").find_elements_by_tag_name("option")) > 0:
-            masterList = Select(driver.find_element_by_id("rx_search_request_delegator_id"))
-            masterOptions = masterList.options
-            for i in range(0, len(masterOptions)):
-                masterOptions[i] = masterOptions[i].text
-            return masterOptions
-        else:
             return False
+        try:
+            if len(driver.find_element_by_id("rx_search_request_delegator_id").find_elements_by_tag_name("option")) > 0:
+                masterList = Select(driver.find_element_by_id("rx_search_request_delegator_id"))
+                masterOptions = masterList.options
+                for i in range(0, len(masterOptions)):
+                    masterOptions[i] = masterOptions[i].text
+                return masterOptions
+            else:
+                return False
+        except:
+            return "No Master Accounts!"
 
 
     def downloadData(date, lastName, firstName, dob):
@@ -129,12 +131,15 @@ try:
         beginDate.send_keys(date)
 
         # checks for master account; if exists, it asks user which one to use, then selects it
-        if len(driver.find_element_by_id("rx_search_request_delegator_id").find_elements_by_tag_name("option")) > 0:
-            masterList = Select(driver.find_element_by_id("rx_search_request_delegator_id"))
-            masterOptions = masterList.options
-            global masterChoice
-            masterAccount = masterOptions[masterChoice]
-            masterAccount.click()
+        try:
+            if len(driver.find_element_by_id("rx_search_request_delegator_id").find_elements_by_tag_name("option")) > 0:
+                masterList = Select(driver.find_element_by_id("rx_search_request_delegator_id"))
+                masterOptions = masterList.options
+                global masterChoice
+                masterAccount = masterOptions[masterChoice]
+                masterAccount.click()
+        except:
+            pass
 
 
         # selects next button
