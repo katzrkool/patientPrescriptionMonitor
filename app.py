@@ -8,6 +8,7 @@ import time
 import json
 from pathlib import Path
 import webbrowser
+import os
 
 class application(QMainWindow):
 
@@ -26,8 +27,7 @@ class application(QMainWindow):
         self.saveLogin = False;
 
         self.fetchPrefs()
-
-        self.setWindowIcon(QIcon('img/icon.svg'))
+        self.setWindowIcon(QIcon("img/icon.png"))
         self.initUI()
         self.helpWindow = helpWindow()
         self.mainPage.show()
