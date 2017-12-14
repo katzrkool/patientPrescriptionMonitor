@@ -8,7 +8,6 @@ import time
 import json
 from pathlib import Path
 import webbrowser
-import os
 
 class application(QMainWindow):
 
@@ -27,7 +26,7 @@ class application(QMainWindow):
         self.saveLogin = False;
 
         self.fetchPrefs()
-        self.setWindowIcon(QIcon("img/icon.png"))
+
         self.initUI()
         self.helpWindow = helpWindow()
         self.mainPage.show()
@@ -44,7 +43,9 @@ class application(QMainWindow):
             self.login.update(self.defaultValues)
 
     def initUI(self):
+
         mainPage = self.mainPage
+        self.mainPage.setWindowIcon(QIcon("img/icon.svg"))
         mainPage.setStyleSheet("QGroupBox {background-image: url(img/background.png); margin: -5px;}")
 
         mainPage.usernameLabel = QLabel("Username:", mainPage)

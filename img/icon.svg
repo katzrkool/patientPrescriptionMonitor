@@ -14,8 +14,11 @@
    viewBox="0 0 16 16"
    version="1.1"
    id="SVGRoot"
-   sodipodi:docname="checknarc.svg"
-   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)">
+   sodipodi:docname="icon.svg"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
+   inkscape:export-filename="/home/lucas/PycharmProjects/clinic/img/icon.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -25,9 +28,9 @@
      inkscape:pageshadow="2"
      inkscape:zoom="32"
      inkscape:cx="6.6202894"
-     inkscape:cy="9.7111431"
+     inkscape:cy="8.4611431"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer3"
      showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="950"
@@ -55,6 +58,21 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Layer 2" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="background">
+    <path
+       style="fill:#ffffff;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 4.6282469,3.8402374 4.8796419,14.757848 11.344017,14.721948 11.48767,3.894107 Z"
+       id="path4767"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#ffffff;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 3.9749902,1.0675218 0.035913,2.3343586 c 0,0 2.5906686,1.6266854 8.0086328,0.1436525 l -0.0359,-2.4061851 c 0,0 -3.5024056,-1.78555419 -8.0086458,-0.071826 z"
+       id="path4769"
+       inkscape:connector-curvature="0" />
+  </g>
   <g
      id="layer1"
      inkscape:groupmode="layer"
