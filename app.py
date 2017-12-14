@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QLabel, QGroupBox, QDesktopWidget, QLineEdit, QPushButton,
                              QProgressBar, QInputDialog, QFileDialog, QCheckBox, QMessageBox)
 from PyQt5.QtCore import QThread, pyqtSignal, QCoreApplication, pyqtSlot, Qt
+from PyQt5.QtGui import QIcon
 import scraper
 import sys
 import time
@@ -26,6 +27,7 @@ class application(QMainWindow):
 
         self.fetchPrefs()
 
+        self.setWindowIcon(QIcon('img/icon.svg'))
         self.initUI()
         self.helpWindow = helpWindow()
         self.mainPage.show()
