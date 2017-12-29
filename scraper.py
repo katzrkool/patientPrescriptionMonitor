@@ -162,13 +162,15 @@ try:
                 spinner = driver.find_element_by_class_name("rx_request_new_spinner")
             while not popup(True):
                 time.sleep(0.1)
-            time.sleep(0.5)
-            if "false" == driver.find_element_by_id("multiple_patient_confirmation_modal").get_attribute("aria-hidden"):
-                WebDriverWait(driver, 100)
+            time.sleep(1)
+            if popup(False) == "multiple":
                 patientChoices = driver.find_elements_by_class_name("patient_group_table")
                 for i in patientChoices:
-                    i.find_element_by_xpath(".input[@type=checkbox]").click()
-                driver.find_element_by_xpath('//*[@id="multiple_patient_confirmation"]/div[4]/div/button[2]').click()
+                    checkDiv = i.find_element_by_class_name("checkbox")
+                    checkDiv.find_element_by_css_selector("input[id^=selected_patient_group]").click()
+                driver.find_element_by_css_selector("#multiple_patient_confirmation > div.modal-footer > div > button.btn.btn-primary").click()
+                WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/h2')))
         except:
             pass
         finally:
@@ -200,21 +202,28 @@ try:
         fetchData(csvFile)
 
     def popup(bool):
-        if driver.find_element_by_id("multiple_patient_confirmation_modal").get_attribute("aria-hidden") == "true":
+        if driver.find_element_by_id("multiple_patient_confirmation_modal").get_attribute("aria-hidden") == "false":
             if bool:
                 return True
             else:
                 return "multiple"
-        elif driver.find_element_by_id("patients_found_but_no_results_modal").get_attribute("aria-hidden") ==  "true":
+        elif driver.find_element_by_id("patients_found_but_no_results_modal").get_attribute("aria-hidden") ==  "false":
             if bool:
                 return True
             else:
                 return "no results"
         else:
-            if bool:
-                return False
-            else:
-                return "no"
+            try:
+                driver.find_element_by_id("alert-error")
+                if bool:
+                    return True
+                else:
+                    return "error"
+            except:
+                if bool:
+                    return False
+                else:
+                    return "no"
 
 
     def setMasterAccount(choice):
