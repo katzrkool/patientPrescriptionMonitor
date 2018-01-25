@@ -8,6 +8,8 @@ import time
 import json
 from pathlib import Path
 import webbrowser
+import warnings
+warnings.filterwarnings("ignore")
 
 class application(QMainWindow):
 
