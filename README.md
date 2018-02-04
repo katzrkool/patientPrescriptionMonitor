@@ -4,7 +4,6 @@ Download patient prescription data from the [arkansas pmp database](https://arka
 ## Prerequisites
 * PyQt5
 * Pandas
-* Requests
 * Selenium
 * Google Chrome or Chromium
 * chromedriver
