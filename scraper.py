@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options
 
 # Initializing browsers and virtual displays
 try:
@@ -17,11 +17,10 @@ try:
         global date
 
         # Display(visible=0, size=(1920, 1080)).start()
-        # driver = webdriver.Firefox()
         # driver.set_window_size(1920, 1080)
         options = Options()
         options.add_argument("--headless")
-        driver = webdriver.Chrome(chrome_options=options)
+        driver = webdriver.Firefox(firefox_options=options)
         driver.set_window_size(1920, 1080)
 
         # Getting date 100 days back
