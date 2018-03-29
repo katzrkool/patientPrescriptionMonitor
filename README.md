@@ -5,16 +5,16 @@ Download patient prescription data from the [arkansas pmp database](https://arka
 * PyQt5
 * Pandas
 * Selenium
-* Google Chrome or Chromium
-* chromedriver
+* Firefox Quantum
+* geckodriver
 
-You can install all of them (except chrome and chromedriver) at once by cloning the repo and running
+You can install all of them (except Firefox and geckodriver) at once by cloning the repo and running
 
 `pip install -r requirements.txt`
 
 ## Download
 
-Download the latest release [here](https://github.com/katzrkool/patientPrescriptionMonitor/releases)
+Download the latest release [here](https://github.com/katzrkool/checkNarc/releases)
 
 ## Usage
 
