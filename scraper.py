@@ -121,6 +121,20 @@ try:
         firstNameBox = driver.find_element_by_id("rx_search_request_first_name")
         firstNameBox.send_keys(firstName)
 
+        # checks for master account; if exists, it asks user which one to use, then selects it
+        try:
+            if len(driver.find_element_by_id(
+                    "rx_search_request_delegator_id").find_elements_by_tag_name(
+                    "option")) > 0:
+                masterList = Select(driver.find_element_by_id(
+                    "rx_search_request_delegator_id"))
+                masterOptions = masterList.options
+                global masterChoice
+                masterAccount = masterOptions[masterChoice]
+                masterAccount.click()
+        except:
+            pass
+
         dobBox = driver.find_element_by_id("rx_search_request_birthdate")
         dobBox.clear()
         dobBox.send_keys(dob)
@@ -129,21 +143,11 @@ try:
         beginDate.clear()
         beginDate.send_keys(date)
 
-        # checks for master account; if exists, it asks user which one to use, then selects it
-        try:
-            if len(driver.find_element_by_id("rx_search_request_delegator_id").find_elements_by_tag_name("option")) > 0:
-                masterList = Select(driver.find_element_by_id("rx_search_request_delegator_id"))
-                masterOptions = masterList.options
-                global masterChoice
-                masterAccount = masterOptions[masterChoice]
-                masterAccount.click()
-        except:
-            pass
-
-
         # selects next button
         submitButton = driver.find_element_by_name("commit")
         submitButton.click()
+
+        time.sleep(5)
 
         # grabs first inital
         firstInitial = firstName[:1]
